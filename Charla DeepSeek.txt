@@ -1,0 +1,150 @@
+System:
+
+You are an AI programming assistant, utilizing the Deepseek Coder model, developed by Deepseek Company, and you only answer questions related to computer science.
+
+User:
+
+Dame una calculadora con la logica de la suma,resta,division y multiplicacion y que sea en una interfaz grafica en Java.
+
+Assistant:
+
+Para crear una calculadora básica con operaciones aritméticas en Java GUI (Interfaz Gráfica de Usuario), podemos usar Swing para la creación de interfaces gráficas e implementar los eventos asociados a las operaciones. Aquí está un ejemplo sencillo:
+
+```java
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+public class Calculator extends JFrame {
+    private JTextField textField;
+    
+    public Calculator() {
+        // Creación de la ventana principal
+        setLayout(new BorderLayout());
+        setTitle("Calculadora");
+        
+        // Campo de texto para mostrar resultados
+        textField = new JTextField();
+        add(textField, BorderLayout.NORTH);
+        
+        // Panel con los botones de las operaciones aritméticas
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(4, 4));
+        
+        String[] operations = {"7", "8", "9", "/", "4", "5", "6", "*", "1", "2", "3", "-", "0", ".", "=", "+"};
+        for (String op : operations) {
+            JButton button = new JButton(op);
+            if ("=".equals(op)) {  // Evento para el botón de igual
+                button.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        String text = textField.getText();
+                        try {
+                            int result = calculateResult(text);
+                            textField.setText("" + result);
+                        } catch (Exception ex) {
+                            textField.setText("Error");
+                        }
+                    }
+                });
+            } else {  // Cualquier otro botón
+                button.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        String currentText = textField.getText();
+                        textField.setText(currentText + op);
+                    }
+                });
+            }
+            panel.add(button);
+        }
+        
+        add(panel, BorderLayout.CENTER);
+        
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        pack();
+    }
+    
+    private int calculateResult(String text) throws Exception {
+        String[] parts = text.split("\\+");  // Divide la expresión por "+"
+        String aStr = parts[0].trim();
+        String bStr = parts[1].trim();
+        
+        if (aStr.contains("/")) {  
+            int pos = aStr.indexOf("/");
+            int a = Integer.parseInt(aStr.substring(0, pos).trim());
+            int b = Integer.parseInt(aStr.substring(pos + 1).trim());
+            
+            return a / b;
+        } else if (bStr.contains("*")) {
+            int pos = bStr.indexOf("*");
+            int a = Integer.parseInt(bStr.substring(0, pos).trim());
+            int b = Integer.parseInt(bStr.substring(pos + 1).trim());
+            
+            return a * b;
+        } else if (aStr.contains("-")) {  
+            int pos = aStr.indexOf("-");
+            int a = Integer.parseInt(aStr.substring(0, pos).trim());
+            int b = Integer.parseInt(aStr.substring(pos + 1).trim());
+            
+            return a - b;
+        } else if (bStr.contains("/")) {  
+            int pos = bStr.indexOf("/");
+            int a = Integer.parseInt(bStr.substring(0, pos).trim());
+            int b = Integer.parseInt(bStr.substring(pos + 1).trim());
+            
+            return a / b;
+        } else {  
+            int a = Integer.parseInt(aStr);
+            int b = Integer.parseInt(bStr);
+            
+            return a + b;
+        }
+    }
+    
+    public static void main(String[] args) {
+        new Calculator().setVisible(true);
+    }
+}
+```
+Este código crea una ventana con un campo de texto para mostrar los resultados y botones numéricos y aritméticos. Cuando se presiona un botón, la etiqueta del botón se añade al campo de texto (excepto el botón "=", que calcula el resultado).
+
+User:
+
+Hay un erorr en la funcion calculateResult, porque solo toma como valida la suma.
+
+Assistant:
+
+```java
+private int calculateResult(String text) throws Exception {
+    // Dividir la expresión en operandos y operadores utilizando expresiones regulares
+    String[] parts = text.split("(?<=[-+*/])|(?=[-+*/])");
+    String aStr = parts[0].trim();
+    String operator = parts[1].trim();
+    String bStr = parts[2].trim();
+
+    // Convertir los operandos a enteros
+    int a = Integer.parseInt(aStr);
+    int b = Integer.parseInt(bStr);
+
+    // Realizar la operación adecuada según el operador
+    switch (operator) {
+        case "+":
+            return a + b;
+        case "-":
+            return a - b;
+        case "*":
+            return a * b;
+        case "/":
+            if (b == 0) {
+                throw new ArithmeticException("No se puede dividir por cero.");
+            }
+            return a / b;
+        default:
+            throw new IllegalArgumentException("Operador inválido: " + operator);
+    }
+}
+```
+Esta función `calculateResult` se basa en una expresión regular para dividir la cadena de entrada en operandos y operadores, que luego son convertidos a enteros y realizados las operaciones correspondientes seg�n el signo del operador.
+
+Es importante tener en cuenta que esta función sólo puede manejar una operación por vez (uno de los dos n�meros antes del signo, uno de los dos después). Por ejemplo, "2 + 3 * 4" no será aceptada porque el lenguaje simplemente no permite eso sin usar paréntesis.
+
+Por otra parte, la función puede arrojar una `NumberFormatException` si se intenta convertir un operando a entero y éste no es válido (por ejemplo, "abc"). También puede arrojar una `ArithmeticException` cuando ocurre una división por cero.
